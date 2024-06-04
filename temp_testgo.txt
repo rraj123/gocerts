@@ -1,0 +1,52 @@
+package main
+
+import (
+	"io/ioutil"
+	"os"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
+)
+
+// YourTestSuite defines a suite struct
+type YourTestSuite struct {
+	suite.Suite
+	tempDir string
+}
+
+// SetupSuite runs once before the suite starts
+func (suite *YourTestSuite) SetupSuite() {
+	var err error
+	suite.tempDir, err = ioutil.TempDir("", "testsuite")
+	if err != nil {
+		suite.T().Fatal("Failed to create temp dir:", err)
+	}
+}
+
+// TearDownSuite runs once after the suite finishes
+func (suite *YourTestSuite) TearDownSuite() {
+	err := os.RemoveAll(suite.tempDir)
+	if err != nil {
+		suite.T().Log("Failed to remove temp dir:", err)
+	}
+}
+
+// TestExample is an example test that uses the tempDir
+func (suite *YourTestSuite) TestExample() {
+	assert.NotEmpty(suite.T(), suite.tempDir, "TempDir should not be empty")
+
+	// You can use the tempDir here for your tests
+	tempFile := suite.tempDir + "/tempfile.txt"
+	err := ioutil.WriteFile(tempFile, []byte("temporary data"), 0644)
+	assert.NoError(suite.T(), err)
+
+	data, err := ioutil.ReadFile(tempFile)
+	assert.NoError(suite.T(), err)
+	assert.Equal(suite.T(), "temporary data", string(data))
+}
+
+// This is the entry point for the test suite
+func TestYourTestSuite(t *testing.T) {
+	suite.Run(t, new(YourTestSuite))
+}
